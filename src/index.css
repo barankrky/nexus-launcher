@@ -1,0 +1,43 @@
+@import "@fontsource/inter";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@layer base {
+	:root {
+		/* Nexus Launcher Dark Theme - PRD Colors */
+		--background: 0 0% 0%;
+		--foreground: 210 20% 98%;
+		--card: 0 0% 10%;
+		--card-foreground: 210 20% 98%;
+		--popover: 0 0% 10%;
+		--popover-foreground: 210 20% 98%;
+		--primary: 217 91% 60%;
+		--primary-foreground: 0 0% 0%;
+		--secondary: 215 28% 17%;
+		--secondary-foreground: 210 20% 98%;
+		--muted: 215 28% 17%;
+		--muted-foreground: 217.9 10.6% 64.9%;
+		--accent: 217 91% 60%;
+		--accent-foreground: 0 0% 0%;
+		--destructive: 0 62.8% 30.6%;
+		--destructive-foreground: 210 20% 98%;
+		--border: 215 28% 17%;
+		--input: 215 28% 17%;
+		--ring: 217 91% 60%;
+		--chart-1: 220 70% 50%;
+		--chart-2: 160 60% 45%;
+		--chart-3: 30 80% 55%;
+		--chart-4: 280 65% 60%;
+		--chart-5: 340 75% 55%;
+		--radius: 0.5rem;
+	}
+}
+@layer base {
+	* {
+		@apply border-border;
+	}
+	body {
+		@apply bg-background text-foreground;
+		font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+	}
+}
