@@ -4,14 +4,12 @@ import { Badge } from "@/components/badge";
 import { Button } from "@/components/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/card";
 import { Separator } from "@/components/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/tabs";
 import { useProvider } from "@/contexts/ProviderContext";
 import type { Game as GameType } from "@/types/game";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export default function HomePage() {
-	const [activeTab, setActiveTab] = useState("featured");
 	const { fetchGames, isLoading, error, fetchGamesPaginated } = useProvider();
 	const [games, setGames] = useState<GameType[]>([]);
 	const [currentPage, setCurrentPage] = useState(1);
@@ -128,131 +126,64 @@ export default function HomePage() {
 
 			<Separator className="bg-onyx-3 mb-8" />
 
-			{/* More Games Section with Tabs */}
-			<Card className="border-onyx-3 bg-onyx-2">
-				<CardHeader className="pb-4">
-					<div className="flex items-center justify-between">
-						<CardTitle className="text-pure-white text-xl font-semibold font-inter">
-							Daha Fazla
-						</CardTitle>
-						<Badge variant="outline" className="text-foreground border-onyx-3">
-							{games.length} Oyun
-						</Badge>
-					</div>
-				</CardHeader>
-				<CardContent className="pt-0">
-					{/* Category Tabs */}
-					<Tabs
-						defaultValue="featured"
-						className="w-full"
-						value={activeTab}
-						onValueChange={setActiveTab}
-					>
-						<TabsList className="bg-onyx-3 border border-onyx-3 mb-6">
-							<TabsTrigger
-								value="featured"
-								className="data-[state=active]:bg-onyx data-[state=active]:text-pure-white data-[state=active]:shadow-sm"
-							>
-								Öne Çıkanlar
-							</TabsTrigger>
-							<TabsTrigger
-								value="trending"
-								className="data-[state=active]:bg-onyx data-[state=active]:text-pure-white data-[state=active]:shadow-sm"
-							>
-								Trend Oyunlar
-							</TabsTrigger>
-							<TabsTrigger
-								value="new"
-								className="data-[state=active]:bg-onyx data-[state=active]:text-pure-white data-[state=active]:shadow-sm"
-							>
-								Yeni Çıkanlar
-							</TabsTrigger>
-						</TabsList>
+			{/* More Games Section - Containerless with 4 items per row */}
+			<div>
+				{/* Section Title */}
+				<div className="flex items-center justify-between mb-6 px-0">
+					<h2 className="text-pure-white text-xl font-semibold font-inter">
+						Daha Fazla
+					</h2>
+					<Badge variant="outline" className="text-foreground border-onyx-3">
+						{games.length} Oyun
+					</Badge>
+				</div>
 
-						{/* Featured Games Tab */}
-						<TabsContent value="featured" className="mt-0">
-							{isGamesLoading && games.length === 0 ? (
-								<div className="flex items-center justify-center h-56">
-									<Loader2 className="w-8 h-8 text-cool-gray animate-spin" />
-								</div>
-							) : featuredGames.length > 0 ? (
-								<div className="flex flex-wrap gap-2 lg:gap-3">
-									{featuredGames.map((game) => (
-										<div key={game.id} className="sm:col-span-2 lg:col-span-1">
-											<GameCard game={game} />
-										</div>
-									))}
-								</div>
-							) : (
-								<div className="flex items-center justify-center h-56">
-									<p className="text-text-gray">Henüz oyun bulunmuyor</p>
-								</div>
-							)}
-						</TabsContent>
-
-						{/* Trending Games Tab */}
-						<TabsContent value="trending" className="mt-0">
-							{isGamesLoading && games.length === 0 ? (
-								<div className="flex items-center justify-center h-56">
-									<Loader2 className="w-8 h-8 text-cool-gray animate-spin" />
-								</div>
-							) : trendingGames.length > 0 ? (
-								<div className="flex flex-wrap gap-2 lg:gap-3">
-									{trendingGames.map((game) => (
-										<div key={game.id} className="sm:col-span-2 lg:col-span-1">
-											<GameCard game={game} />
-										</div>
-									))}
-								</div>
-							) : (
-								<div className="flex items-center justify-center h-56">
-									<p className="text-text-gray">Henüz oyun bulunmuyor</p>
-								</div>
-							)}
-						</TabsContent>
-
-						{/* New Games Tab */}
-						<TabsContent value="new" className="mt-0">
-							{isGamesLoading && games.length === 0 ? (
-								<div className="flex items-center justify-center h-56">
-									<Loader2 className="w-8 h-8 text-cool-gray animate-spin" />
-								</div>
-							) : newGames.length > 0 ? (
-								<div className="flex flex-wrap gap-2 lg:gap-3">
-									{newGames.map((game) => (
-										<GameCard key={game.id} game={game} />
-									))}
-								</div>
-							) : (
-								<div className="flex items-center justify-center h-56">
-									<p className="text-text-gray">Henüz oyun bulunmuyor</p>
-								</div>
-							)}
-						</TabsContent>
-					</Tabs>
-
-					{/* Load More Button */}
-					{hasMore && games.length > 0 && (
-						<div className="flex justify-center mt-6">
-							<Button
-								onClick={handleLoadMore}
-								disabled={isGamesLoading}
-								variant="outline"
-								className="border-onyx-3 text-pure-white hover:bg-onyx min-w-[150px]"
-							>
-								{isGamesLoading ? (
-									<>
-										<Loader2 className="w-4 h-4 mr-2 animate-spin" />
-										Yükleniyor...
-									</>
-								) : (
-									"Daha Fazla Yükle"
-								)}
-							</Button>
+				{/* Games Grid - Full width, no padding */}
+				<div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-3">
+					{isGamesLoading && games.length === 0 ? (
+						<div className="col-span-full flex items-center justify-center h-56">
+							<Loader2 className="w-8 h-8 text-cool-gray animate-spin" />
+						</div>
+					) : featuredGames.length > 0 || trendingGames.length > 0 || newGames.length > 0 ? (
+						<>
+							{featuredGames.map((game) => (
+								<GameCard key={game.id} game={game} />
+							))}
+							{trendingGames.map((game) => (
+								<GameCard key={game.id} game={game} />
+							))}
+							{newGames.map((game) => (
+								<GameCard key={game.id} game={game} />
+							))}
+						</>
+					) : (
+						<div className="col-span-full flex items-center justify-center h-56">
+							<p className="text-text-gray">Henüz oyun bulunmuyor</p>
 						</div>
 					)}
-				</CardContent>
-			</Card>
+				</div>
+
+				{/* Load More Button */}
+				{hasMore && games.length > 0 && (
+					<div className="flex justify-center mt-6">
+						<Button
+							onClick={handleLoadMore}
+							disabled={isGamesLoading}
+							variant="outline"
+							className="border-onyx-3 text-pure-white hover:bg-onyx min-w-[150px]"
+						>
+							{isGamesLoading ? (
+								<>
+									<Loader2 className="w-4 h-4 mr-2 animate-spin" />
+									Yükleniyor...
+								</>
+							) : (
+								"Daha Fazla Yükle"
+							)}
+						</Button>
+					</div>
+				)}
+			</div>
 		</div>
 	);
 }

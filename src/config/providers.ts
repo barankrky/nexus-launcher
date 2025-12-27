@@ -6,7 +6,7 @@ import type { ProviderConfig, WordPressProviderConfig } from '../types/game';
 export const OYUNINDIR_CONFIG: WordPressProviderConfig = {
 	baseUrl: 'https://www.oyunindir.vip',
 	apiEndpoint: '/wp-json/wp/v2/posts',
-	postsPerPage: 10,
+	postsPerPage: 30,
 	embed: true,
 	category: '12', // Filter by PC games category (category ID 12)
 };
@@ -87,7 +87,7 @@ export function createWordPressConfig(
 	return {
 		baseUrl,
 		apiEndpoint: options.apiEndpoint || '/wp-json/wp/v2/posts',
-		postsPerPage: options.postsPerPage || 10,
+		postsPerPage: options.postsPerPage || 30,
 		embed: options.embed !== false,
 		category: options.category,
 		apiKey: options.apiKey,
@@ -99,7 +99,7 @@ export function createWordPressConfig(
  * Default configuration values for WordPress providers
  */
 export const DEFAULT_PROVIDER_CONFIG = {
-	postsPerPage: 10,
+	postsPerPage: 30,
 	embed: true,
 	cacheExpiry: 5 * 60 * 1000, // 5 minutes
 	requestTimeout: 30000, // 30 seconds
