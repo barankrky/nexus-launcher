@@ -1,4 +1,4 @@
-import type { WordPressProviderConfig, ProviderConfig } from '../types/game';
+import type { ProviderConfig, WordPressProviderConfig } from '../types/game';
 
 /**
  * Default WordPress provider configuration for oyunindir.vip
@@ -8,6 +8,7 @@ export const OYUNINDIR_CONFIG: WordPressProviderConfig = {
 	apiEndpoint: '/wp-json/wp/v2/posts',
 	postsPerPage: 10,
 	embed: true,
+	category: '12', // Filter by PC games category (category ID 12)
 };
 
 /**
@@ -248,3 +249,5 @@ export function getProviderMetadata(config: ProviderConfig): {
 		hasAuth: !!config.apiKey,
 	};
 }
+
+

@@ -1,21 +1,17 @@
-import { WordPressProvider } from '../providers/wordpress-provider';
-import { OYUNINDIR_CONFIG } from '../config/providers';
-import type {
-	Game,
-	Category,
-	PaginatedResponse,
-} from '../types/game';
+import { OYUNINDIR_CONFIG } from "../config/providers";
+import { WordPressProvider } from "../providers/wordpress-provider";
+import type { Category, Game, PaginatedResponse } from "../types/game";
 
 /**
  * Provider Service - Singleton service for managing game provider interactions
- * 
+ *
  * This service wraps the WordPressProvider with React-friendly patterns,
  * including error handling, logging, and consistent interfaces.
- * 
+ *
  * @example
  * ```typescript
  * import { providerService } from '@/services/provider-service';
- * 
+ *
  * const games = await providerService.getGames(1, 10);
  * ```
  */
@@ -26,7 +22,7 @@ class ProviderService {
 	private constructor() {
 		this.provider = new WordPressProvider(OYUNINDIR_CONFIG);
 		this.isInitialized = true;
-		this.log('Provider service initialized');
+		this.log("Provider service initialized");
 	}
 
 	/**
@@ -47,15 +43,18 @@ class ProviderService {
 	 * @param message Message to log
 	 * @param level Log level (info, warn, error)
 	 */
-	private log(message: string, level: 'info' | 'warn' | 'error' = 'info'): void {
+	private log(
+		message: string,
+		level: "info" | "warn" | "error" = "info",
+	): void {
 		const timestamp = new Date().toISOString();
 		const logMessage = `[ProviderService ${timestamp}] ${message}`;
-		
+
 		switch (level) {
-			case 'error':
+			case "error":
 				console.error(logMessage);
 				break;
-			case 'warn':
+			case "warn":
 				console.warn(logMessage);
 				break;
 			default:
@@ -72,7 +71,7 @@ class ProviderService {
 	private handleError(error: unknown, context: string): never {
 		const message = error instanceof Error ? error.message : String(error);
 		const errorMessage = `[ProviderService] ${context}: ${message}`;
-		this.log(errorMessage, 'error');
+		this.log(errorMessage, "error");
 		throw new Error(errorMessage);
 	}
 
@@ -81,7 +80,7 @@ class ProviderService {
 	 * @param page Page number (1-indexed, default: 1)
 	 * @param limit Number of games per page (default: 10)
 	 * @returns Promise resolving to an array of games
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * const games = await providerService.getGames(1, 10);
@@ -94,7 +93,10 @@ class ProviderService {
 			this.log(`Successfully fetched ${games.length} games`);
 			return games;
 		} catch (error) {
-			this.handleError(error, `Failed to fetch games (page: ${page}, limit: ${limit})`);
+			this.handleError(
+				error,
+				`Failed to fetch games (page: ${page}, limit: ${limit})`,
+			);
 		}
 	}
 
@@ -103,7 +105,7 @@ class ProviderService {
 	 * @param id Unique game identifier
 	 * @returns Promise resolving to the game
 	 * @throws Error if game is not found
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * const game = await providerService.getGameById(12345);
@@ -113,12 +115,12 @@ class ProviderService {
 		try {
 			this.log(`Fetching game with id: ${id}`);
 			const game = await this.provider.getGameById(id);
-			
+
 			if (!game) {
-				this.log(`Game with id ${id} not found`, 'warn');
+				this.log(`Game with id ${id} not found`, "warn");
 				throw new Error(`Game with id ${id} not found`);
 			}
-			
+
 			this.log(`Successfully fetched game: ${game.title}`);
 			return game;
 		} catch (error) {
@@ -130,7 +132,7 @@ class ProviderService {
 	 * Search for games by query
 	 * @param query Search query string
 	 * @returns Promise resolving to an array of matching games
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * const results = await providerService.searchGames('action');
@@ -139,7 +141,7 @@ class ProviderService {
 	public async searchGames(query: string): Promise<Game[]> {
 		try {
 			if (!query.trim()) {
-				this.log('Search query is empty, returning empty results');
+				this.log("Search query is empty, returning empty results");
 				return [];
 			}
 
@@ -155,7 +157,7 @@ class ProviderService {
 	/**
 	 * Fetch available categories
 	 * @returns Promise resolving to an array of categories
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * const categories = await providerService.getCategories();
@@ -163,12 +165,12 @@ class ProviderService {
 	 */
 	public async getCategories(): Promise<Category[]> {
 		try {
-			this.log('Fetching categories');
+			this.log("Fetching categories");
 			const categories = await this.provider.getCategories();
 			this.log(`Successfully fetched ${categories.length} categories`);
 			return categories;
 		} catch (error) {
-			this.handleError(error, 'Failed to fetch categories');
+			this.handleError(error, "Failed to fetch categories");
 		}
 	}
 
@@ -177,24 +179,33 @@ class ProviderService {
 	 * @param page Page number (default: 1)
 	 * @param limit Number of games per page (default: 10)
 	 * @returns Promise resolving to paginated response
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * const response = await providerService.getGamesPaginated(1, 20);
 	 * console.log(`Page ${response.page} of ${response.totalPages}`);
 	 * ```
 	 */
-	public async getGamesPaginated(page = 1, limit = 10): Promise<PaginatedResponse<Game>> {
+	public async getGamesPaginated(
+		page = 1,
+		limit = 10,
+	): Promise<PaginatedResponse<Game>> {
 		try {
 			this.log(`Fetching paginated games - page: ${page}, limit: ${limit}`);
-			const paginatedResponse = await this.provider.getGamesPaginated(page, limit);
+			const paginatedResponse = await this.provider.getGamesPaginated(
+				page,
+				limit,
+			);
 			this.log(
 				`Successfully fetched paginated games - page: ${paginatedResponse.page}, ` +
-				`total: ${paginatedResponse.total}, total pages: ${paginatedResponse.totalPages}`
+					`total: ${paginatedResponse.total}, total pages: ${paginatedResponse.totalPages}`,
 			);
 			return paginatedResponse;
 		} catch (error) {
-			this.handleError(error, `Failed to fetch paginated games (page: ${page}, limit: ${limit})`);
+			this.handleError(
+				error,
+				`Failed to fetch paginated games (page: ${page}, limit: ${limit})`,
+			);
 		}
 	}
 
@@ -204,7 +215,7 @@ class ProviderService {
 	 * @param page Page number (default: 1)
 	 * @param limit Number of games per page (default: 10)
 	 * @returns Promise resolving to an array of games in the category
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * const actionGames = await providerService.getGamesByCategory(5, 1, 20);
@@ -213,17 +224,25 @@ class ProviderService {
 	public async getGamesByCategory(
 		categoryId: number,
 		page = 1,
-		limit = 10
+		limit = 10,
 	): Promise<Game[]> {
 		try {
-			this.log(`Fetching games for category ${categoryId} - page: ${page}, limit: ${limit}`);
-			const games = await this.provider.getGamesByCategory(categoryId, page, limit);
-			this.log(`Successfully fetched ${games.length} games for category ${categoryId}`);
+			this.log(
+				`Fetching games for category ${categoryId} - page: ${page}, limit: ${limit}`,
+			);
+			const games = await this.provider.getGamesByCategory(
+				categoryId,
+				page,
+				limit,
+			);
+			this.log(
+				`Successfully fetched ${games.length} games for category ${categoryId}`,
+			);
 			return games;
 		} catch (error) {
 			this.handleError(
 				error,
-				`Failed to fetch games for category ${categoryId} (page: ${page}, limit: ${limit})`
+				`Failed to fetch games for category ${categoryId} (page: ${page}, limit: ${limit})`,
 			);
 		}
 	}
@@ -231,7 +250,7 @@ class ProviderService {
 	/**
 	 * Check if the provider is healthy/responsive
 	 * @returns Promise resolving to true if provider is healthy
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * const isHealthy = await providerService.healthCheck();
@@ -242,24 +261,24 @@ class ProviderService {
 	 */
 	public async healthCheck(): Promise<boolean> {
 		try {
-			this.log('Performing health check');
+			this.log("Performing health check");
 			const isHealthy = await this.provider.healthCheck();
-			
+
 			if (isHealthy) {
-				this.log('Health check passed');
+				this.log("Health check passed");
 			} else {
-				this.log('Health check failed', 'warn');
+				this.log("Health check failed", "warn");
 			}
-			
+
 			return isHealthy;
 		} catch (error) {
-			this.handleError(error, 'Failed to perform health check');
+			this.handleError(error, "Failed to perform health check");
 		}
 	}
 
 	/**
 	 * Clear the provider cache
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * providerService.clearCache();
@@ -267,18 +286,18 @@ class ProviderService {
 	 */
 	public clearCache(): void {
 		try {
-			this.log('Clearing provider cache');
+			this.log("Clearing provider cache");
 			this.provider.clearCache();
-			this.log('Provider cache cleared successfully');
+			this.log("Provider cache cleared successfully");
 		} catch (error) {
-			this.handleError(error, 'Failed to clear provider cache');
+			this.handleError(error, "Failed to clear provider cache");
 		}
 	}
 
 	/**
 	 * Get the provider instance
 	 * @returns The underlying WordPressProvider instance
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * const provider = providerService.getProvider();
@@ -286,7 +305,7 @@ class ProviderService {
 	 */
 	public getProvider(): WordPressProvider {
 		if (!this.isInitialized) {
-			throw new Error('Provider service is not initialized');
+			throw new Error("Provider service is not initialized");
 		}
 		return this.provider;
 	}
@@ -294,7 +313,7 @@ class ProviderService {
 	/**
 	 * Get provider configuration
 	 * @returns Current provider configuration
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * const config = providerService.getConfig();

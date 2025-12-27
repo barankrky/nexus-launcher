@@ -1,17 +1,17 @@
-import { BaseProvider } from './base-provider';
 import type {
-	Game,
-	Category,
-	WordPressPostResponse,
-	WordPressMedia,
-	WordPressAuthor,
-	WordPressTerm,
-	WordPressProviderConfig,
 	Author,
-	Tag,
+	Category,
 	DownloadLink,
+	Game,
 	SystemRequirements,
+	Tag,
+	WordPressAuthor,
+	WordPressMedia,
+	WordPressPostResponse,
+	WordPressProviderConfig,
+	WordPressTerm,
 } from '../types/game';
+import { BaseProvider } from './base-provider';
 
 /**
  * WordPress-based game provider
@@ -72,8 +72,8 @@ export class WordPressProvider extends BaseProvider {
 				page,
 				per_page: Math.min(limit, this.postsPerPage),
 				_embed: this.embed ? '1' : undefined,
-				// Filter by category if specified in config
-				categories: this.config.category ? undefined : undefined,
+				// Filter by PC games category (category ID 12)
+				categories: 12,
 			});
 
 			const response = await fetch(url, {
@@ -161,6 +161,8 @@ export class WordPressProvider extends BaseProvider {
 				search: query,
 				_embed: this.embed ? '1' : undefined,
 				per_page: this.postsPerPage,
+				// Filter by PC games category (category ID 12)
+				categories: 12,
 			});
 
 			const response = await fetch(url, {

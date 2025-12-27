@@ -7,8 +7,8 @@ import { Separator } from "@/components/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/tabs";
 import { useProvider } from "@/contexts/ProviderContext";
 import type { Game as GameType } from "@/types/game";
-import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function HomePage() {
 	const [activeTab, setActiveTab] = useState("featured");
@@ -25,7 +25,7 @@ export default function HomePage() {
 			try {
 				const fetchedGames = await fetchGames(1, 20);
 				setGames(fetchedGames);
-				
+
 				// Check if there are more games to load
 				const paginatedResult = await fetchGamesPaginated(1, 20);
 				setHasMore(paginatedResult.hasNextPage);
@@ -48,7 +48,7 @@ export default function HomePage() {
 			const nextPage = currentPage + 1;
 			const newGames = await fetchGames(nextPage, 20);
 			setGames((prevGames) => [...prevGames, ...newGames]);
-			
+
 			// Check if there are more games
 			const paginatedResult = await fetchGamesPaginated(nextPage, 20);
 			setHasMore(paginatedResult.hasNextPage);
@@ -105,7 +105,9 @@ export default function HomePage() {
 						</div>
 					) : error ? (
 						<div className="flex flex-col items-center justify-center h-80">
-							<p className="text-text-gray mb-4">Oyunlar yüklenirken bir hata oluştu</p>
+							<p className="text-text-gray mb-4">
+								Oyunlar yüklenirken bir hata oluştu
+							</p>
 							<Button
 								variant="outline"
 								onClick={() => window.location.reload()}

@@ -1,14 +1,16 @@
-import React, { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
-import { providerService } from '../services/provider-service';
-import type {
-	Game,
-	Category,
-	PaginatedResponse,
-} from '../types/game';
+import React, {
+	createContext,
+	useContext,
+	useState,
+	useCallback,
+	type ReactNode,
+} from "react";
+import { providerService } from "../services/provider-service";
+import type { Category, Game, PaginatedResponse } from "../types/game";
 
 /**
  * Provider Context Value Interface
- * 
+ *
  * Defines the shape of the context value that will be provided
  * to components consuming this context.
  */
@@ -26,9 +28,16 @@ interface ProviderContextValue {
 	/** Fetch available categories */
 	fetchCategories: () => Promise<Category[]>;
 	/** Fetch games with pagination metadata */
-	fetchGamesPaginated: (page?: number, limit?: number) => Promise<PaginatedResponse<Game>>;
+	fetchGamesPaginated: (
+		page?: number,
+		limit?: number,
+	) => Promise<PaginatedResponse<Game>>;
 	/** Fetch games by category */
-	fetchGamesByCategory: (categoryId: number, page?: number, limit?: number) => Promise<Game[]>;
+	fetchGamesByCategory: (
+		categoryId: number,
+		page?: number,
+		limit?: number,
+	) => Promise<Game[]>;
 	/** Clear the current error */
 	clearError: () => void;
 	/** Check if the provider is healthy */
@@ -40,7 +49,9 @@ interface ProviderContextValue {
 /**
  * Create the Provider Context
  */
-const ProviderContext = createContext<ProviderContextValue | undefined>(undefined);
+const ProviderContext = createContext<ProviderContextValue | undefined>(
+	undefined,
+);
 
 /**
  * Provider Context Props
@@ -52,10 +63,10 @@ interface ProviderContextProps {
 
 /**
  * Provider Context Component
- * 
+ *
  * This component wraps the application and provides access to the provider service
  * with built-in loading and error state management.
- * 
+ *
  * @example
  * ```tsx
  * function App() {
@@ -75,10 +86,7 @@ export function ProviderContextProvider({ children }: ProviderContextProps) {
 	 * Set loading state and handle errors consistently
 	 */
 	const withLoading = useCallback(
-		async <T,>(
-			operation: () => Promise<T>,
-			context: string
-		): Promise<T> => {
+		async <T,>(operation: () => Promise<T>, context: string): Promise<T> => {
 			setIsLoading(true);
 			setError(null);
 
@@ -93,7 +101,7 @@ export function ProviderContextProvider({ children }: ProviderContextProps) {
 				setIsLoading(false);
 			}
 		},
-		[]
+		[],
 	);
 
 	/**
@@ -103,10 +111,10 @@ export function ProviderContextProvider({ children }: ProviderContextProps) {
 		async (page = 1, limit = 10): Promise<Game[]> => {
 			return withLoading(
 				() => providerService.getGames(page, limit),
-				'fetchGames'
+				"fetchGames",
 			);
 		},
-		[withLoading]
+		[withLoading],
 	);
 
 	/**
@@ -116,10 +124,10 @@ export function ProviderContextProvider({ children }: ProviderContextProps) {
 		async (id: number): Promise<Game> => {
 			return withLoading(
 				() => providerService.getGameById(id),
-				'fetchGameById'
+				"fetchGameById",
 			);
 		},
-		[withLoading]
+		[withLoading],
 	);
 
 	/**
@@ -129,24 +137,21 @@ export function ProviderContextProvider({ children }: ProviderContextProps) {
 		async (query: string): Promise<Game[]> => {
 			return withLoading(
 				() => providerService.searchGames(query),
-				'searchGames'
+				"searchGames",
 			);
 		},
-		[withLoading]
+		[withLoading],
 	);
 
 	/**
 	 * Fetch available categories
 	 */
-	const fetchCategories = useCallback(
-		async (): Promise<Category[]> => {
-			return withLoading(
-				() => providerService.getCategories(),
-				'fetchCategories'
-			);
-		},
-		[withLoading]
-	);
+	const fetchCategories = useCallback(async (): Promise<Category[]> => {
+		return withLoading(
+			() => providerService.getCategories(),
+			"fetchCategories",
+		);
+	}, [withLoading]);
 
 	/**
 	 * Fetch games with pagination metadata
@@ -155,10 +160,10 @@ export function ProviderContextProvider({ children }: ProviderContextProps) {
 		async (page = 1, limit = 10): Promise<PaginatedResponse<Game>> => {
 			return withLoading(
 				() => providerService.getGamesPaginated(page, limit),
-				'fetchGamesPaginated'
+				"fetchGamesPaginated",
 			);
 		},
-		[withLoading]
+		[withLoading],
 	);
 
 	/**
@@ -168,10 +173,10 @@ export function ProviderContextProvider({ children }: ProviderContextProps) {
 		async (categoryId: number, page = 1, limit = 10): Promise<Game[]> => {
 			return withLoading(
 				() => providerService.getGamesByCategory(categoryId, page, limit),
-				'fetchGamesByCategory'
+				"fetchGamesByCategory",
 			);
 		},
-		[withLoading]
+		[withLoading],
 	);
 
 	/**
@@ -185,13 +190,8 @@ export function ProviderContextProvider({ children }: ProviderContextProps) {
 	 * Check if the provider is healthy
 	 */
 	const healthCheck = useCallback(async (): Promise<boolean> => {
-		return withLoading(
-			() => providerService.healthCheck(),
-			'healthCheck'
-		);
-	},
-	[withLoading]
-);
+		return withLoading(() => providerService.healthCheck(), "healthCheck");
+	}, [withLoading]);
 
 	/**
 	 * Clear the provider cache
@@ -228,24 +228,24 @@ export function ProviderContextProvider({ children }: ProviderContextProps) {
 
 /**
  * Custom hook to access the Provider Context
- * 
+ *
  * This hook provides easy access to the provider service and its state.
  * It must be used within a component that is wrapped by ProviderContextProvider.
- * 
+ *
  * @throws Error if used outside of ProviderContextProvider
- * 
+ *
  * @example
  * ```tsx
  * function GameList() {
  *   const { fetchGames, isLoading, error } = useProvider();
- * 
+ *
  *   useEffect(() => {
  *     fetchGames(1, 10);
  *   }, []);
- * 
+ *
  *   if (isLoading) return <LoadingSpinner />;
  *   if (error) return <ErrorMessage error={error} />;
- * 
+ *
  *   // Render games...
  * }
  * ```
@@ -255,8 +255,8 @@ export function useProvider(): ProviderContextValue {
 
 	if (context === undefined) {
 		throw new Error(
-			'useProvider must be used within a ProviderContextProvider. ' +
-			'Wrap your component tree with <ProviderContextProvider>.'
+			"useProvider must be used within a ProviderContextProvider. " +
+				"Wrap your component tree with <ProviderContextProvider>.",
 		);
 	}
 

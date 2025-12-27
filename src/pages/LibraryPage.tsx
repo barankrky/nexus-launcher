@@ -15,10 +15,10 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/select";
-import { Download, Play, RefreshCw, Loader2 } from "lucide-react";
-import { useState, useEffect } from "react";
 import { useProvider } from "@/contexts/ProviderContext";
-import type { Game as GameType, Category } from "@/types/game";
+import type { Category, Game as GameType } from "@/types/game";
+import { Download, Loader2, Play, RefreshCw } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface LibraryGame {
 	id: number;
@@ -36,7 +36,12 @@ interface LibraryGame {
 }
 
 export default function LibraryPage() {
-	const { fetchGames, fetchCategories, isLoading: providerLoading, error: providerError } = useProvider();
+	const {
+		fetchGames,
+		fetchCategories,
+		isLoading: providerLoading,
+		error: providerError,
+	} = useProvider();
 	const [libraryGames, setLibraryGames] = useState<LibraryGame[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
@@ -53,7 +58,7 @@ export default function LibraryPage() {
 			try {
 				// Fetch games from API
 				const games = await fetchGames(1, 50);
-				
+
 				// Transform API games to library format
 				const transformedGames: LibraryGame[] = games.map((game) => ({
 					id: game.id,
@@ -69,10 +74,12 @@ export default function LibraryPage() {
 					author: game.author.name,
 					categories: game.categories.map((cat) => cat.name),
 				}));
-				
+
 				setLibraryGames(transformedGames);
 			} catch (err) {
-				setError(err instanceof Error ? err.message : "Failed to load library games");
+				setError(
+					err instanceof Error ? err.message : "Failed to load library games",
+				);
 				console.error("Error loading library games:", err);
 			} finally {
 				setIsLoading(false);
@@ -150,10 +157,14 @@ export default function LibraryPage() {
 
 	// Filter and sort games
 	const filteredGames = [...libraryGames].filter((game) => {
-		const matchesSearch = game.title.toLowerCase().includes(searchQuery.toLowerCase());
+		const matchesSearch = game.title
+			.toLowerCase()
+			.includes(searchQuery.toLowerCase());
 		const matchesCategory =
 			selectedCategory === "all" ||
-			game.categories?.some((cat) => cat.toLowerCase() === selectedCategory.toLowerCase());
+			game.categories?.some(
+				(cat) => cat.toLowerCase() === selectedCategory.toLowerCase(),
+			);
 		return matchesSearch && matchesCategory;
 	});
 
@@ -252,7 +263,10 @@ export default function LibraryPage() {
 								<SelectValue />
 							</SelectTrigger>
 							<SelectContent className="bg-carbon-black border-cool-gray text-pure-white">
-								<SelectItem value="name" className="hover:bg-onyx focus:bg-onyx">
+								<SelectItem
+									value="name"
+									className="hover:bg-onyx focus:bg-onyx"
+								>
 									İsim
 								</SelectItem>
 								<SelectItem
@@ -267,7 +281,10 @@ export default function LibraryPage() {
 								>
 									Yayın Tarihi (Eskiden Yeniye)
 								</SelectItem>
-								<SelectItem value="author" className="hover:bg-onyx focus:bg-onyx">
+								<SelectItem
+									value="author"
+									className="hover:bg-onyx focus:bg-onyx"
+								>
 									Yazar
 								</SelectItem>
 							</SelectContent>
@@ -279,7 +296,10 @@ export default function LibraryPage() {
 						<Label htmlFor="category" className="text-pure-white">
 							Kategori
 						</Label>
-						<Select value={selectedCategory} onValueChange={setSelectedCategory}>
+						<Select
+							value={selectedCategory}
+							onValueChange={setSelectedCategory}
+						>
 							<SelectTrigger
 								id="category"
 								className="bg-carbon-black border-cool-gray text-pure-white focus:border-cool-gray focus:ring-cool-gray"
@@ -362,19 +382,24 @@ export default function LibraryPage() {
 									<div className="flex flex-wrap gap-3 text-xs">
 										{game.author && (
 											<span className="text-text-gray font-inter">
-												<span className="text-cool-gray">Yazar:</span> {game.author}
+												<span className="text-cool-gray">Yazar:</span>{" "}
+												{game.author}
 											</span>
 										)}
 										{game.publishedDate && (
 											<span className="text-text-gray font-inter">
 												<span className="text-cool-gray">Yayın Tarihi:</span>{" "}
-												{new Date(game.publishedDate).toLocaleDateString("tr-TR")}
+												{new Date(game.publishedDate).toLocaleDateString(
+													"tr-TR",
+												)}
 											</span>
 										)}
 										{game.dateInstalled && (
 											<span className="text-text-gray font-inter">
 												<span className="text-cool-gray">Yükleme Tarihi:</span>{" "}
-												{new Date(game.dateInstalled).toLocaleDateString("tr-TR")}
+												{new Date(game.dateInstalled).toLocaleDateString(
+													"tr-TR",
+												)}
 											</span>
 										)}
 										{game.categories && game.categories.length > 0 && (

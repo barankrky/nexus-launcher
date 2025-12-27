@@ -51,7 +51,14 @@ export interface DownloadLink {
 /**
  * Types of download links available
  */
-export type DownloadLinkType = 'direct' | 'torrent' | 'mediafire' | 'googledrive' | 'pixeldrain' | 'turbobit' | 'other';
+export type DownloadLinkType =
+	| "direct"
+	| "torrent"
+	| "mediafire"
+	| "googledrive"
+	| "pixeldrain"
+	| "turbobit"
+	| "other";
 
 /**
  * Represents a game category
@@ -160,9 +167,9 @@ export interface WordPressPostResponse {
 		/** Author information */
 		author: WordPressAuthor[];
 		/** Featured media */
-		'wp:featuredmedia': WordPressMedia[];
+		"wp:featuredmedia": WordPressMedia[];
 		/** Categories and tags */
-		'wp:term': WordPressTerm[][];
+		"wp:term": WordPressTerm[][];
 	};
 }
 
@@ -213,9 +220,9 @@ export interface WordPressAuthor {
 	link: string;
 	/** Avatar URLs */
 	avatar_urls: {
-		'24': string;
-		'48': string;
-		'96': string;
+		"24": string;
+		"48": string;
+		"96": string;
 	};
 }
 

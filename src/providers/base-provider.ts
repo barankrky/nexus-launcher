@@ -1,22 +1,22 @@
 import type {
-	Game,
 	Category,
+	Game,
+	PaginatedResponse,
 	Provider,
 	ProviderConfig,
-	PaginatedResponse,
-} from '../types/game';
+} from "../types/game";
 
 /**
  * Abstract base class for game providers
- * 
+ *
  * This class provides a common interface and shared functionality
  * for all game data providers (WordPress, custom APIs, etc.)
- * 
+ *
  * @example
  * ```typescript
  * class CustomProvider extends BaseProvider {
  *   public readonly name = 'Custom Provider';
- *   
+ *
  *   async getGames(page = 1, limit = 10): Promise<Game[]> {
  *     // Implementation specific to this provider
  *   }
@@ -52,7 +52,7 @@ export abstract class BaseProvider implements Provider {
 	 * @param page Page number (1-indexed, default: 1)
 	 * @param limit Number of games per page (default: 10)
 	 * @returns Promise resolving to an array of games
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * const games = await provider.getGames(1, 20);
@@ -65,7 +65,7 @@ export abstract class BaseProvider implements Provider {
 	 * Fetch a single game by ID
 	 * @param id Unique game identifier
 	 * @returns Promise resolving to the game or null if not found
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * const game = await provider.getGameById(12345);
@@ -80,7 +80,7 @@ export abstract class BaseProvider implements Provider {
 	 * Search for games by query
 	 * @param query Search query string
 	 * @returns Promise resolving to an array of matching games
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * const results = await provider.searchGames('action');
@@ -92,7 +92,7 @@ export abstract class BaseProvider implements Provider {
 	/**
 	 * Fetch available categories
 	 * @returns Promise resolving to an array of categories
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * const categories = await provider.getCategories();
@@ -107,7 +107,7 @@ export abstract class BaseProvider implements Provider {
 	 * @param page Page number (default: 1)
 	 * @param limit Number of games per page (default: 10)
 	 * @returns Promise resolving to an array of games in the category
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * const actionGames = await provider.getGamesByCategory(5, 1, 20);
@@ -116,7 +116,7 @@ export abstract class BaseProvider implements Provider {
 	public async getGamesByCategory(
 		categoryId: number,
 		page = 1,
-		limit = 10
+		limit = 10,
 	): Promise<Game[]> {
 		const cacheKey = `category-${categoryId}-${page}-${limit}`;
 		const cached = this.getFromCache<Game[]>(cacheKey);
@@ -136,7 +136,7 @@ export abstract class BaseProvider implements Provider {
 	 * @param page Page number (default: 1)
 	 * @param limit Number of games per page (default: 10)
 	 * @returns Promise resolving to paginated response
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * const response = await provider.getGamesPaginated(1, 20);
@@ -146,10 +146,10 @@ export abstract class BaseProvider implements Provider {
 	 */
 	public async getGamesPaginated(
 		page = 1,
-		limit = 10
+		limit = 10,
 	): Promise<PaginatedResponse<Game>> {
 		const games = await this.getGames(page, limit);
-		
+
 		return {
 			data: games,
 			page,
@@ -163,7 +163,7 @@ export abstract class BaseProvider implements Provider {
 
 	/**
 	 * Clear all cached data
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * provider.clearCache();
@@ -177,7 +177,7 @@ export abstract class BaseProvider implements Provider {
 	/**
 	 * Clear cache for a specific key
 	 * @param key Cache key to clear
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * provider.clearCacheKey('games-1-10');
@@ -199,7 +199,7 @@ export abstract class BaseProvider implements Provider {
 	/**
 	 * Update provider configuration
 	 * @param config New configuration options
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * provider.updateConfig({ apiKey: 'new-key' });
@@ -214,7 +214,7 @@ export abstract class BaseProvider implements Provider {
 	/**
 	 * Check if provider is healthy/responsive
 	 * @returns Promise resolving to true if provider is healthy
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * const isHealthy = await provider.healthCheck();
@@ -278,82 +278,86 @@ export abstract class BaseProvider implements Provider {
 	 */
 	protected extractDownloadLinks(htmlContent: string): any[] {
 		const links: any[] = [];
-		
+
 		// Pattern to match download links with nested tags and HTML entities
 		// Matches: <a href="URL" ...><strong><<< Alternatif: Link1 >>></strong></a>
 		// Also handles: <del><a href="URL">...</a></del> for unavailable links
 		const linkPattern = /<a[^>]+href=["']([^"']+)["'][^>]*>(.*?)<\/a>/gis;
 		let match;
-		
+
 		while ((match = linkPattern.exec(htmlContent)) !== null) {
 			const fullMatch = match[0];
 			const url = match[1];
 			let labelText = match[2];
-			
+
 			// Skip empty or invalid URLs
 			if (!url) {
 				continue;
 			}
-			
+
 			// Decode HTML entities FIRST before removing tags
 			// This ensures < and > are converted to < and > before tag removal
 			labelText = labelText
-				.replace(/</g, '<')
-				.replace(/>/g, '>')
-				.replace(/&/g, '&')
-				.replace(/&#8211;/g, '-')
-				.replace(/&#8230;/g, '...')
+				.replace(/</g, "<")
+				.replace(/>/g, ">")
+				.replace(/&/g, "&")
+				.replace(/&#8211;/g, "-")
+				.replace(/&#8230;/g, "...")
 				.replace(/"/g, '"')
-				.replace(/&nbsp;/g, ' ');
-			
+				.replace(/&nbsp;/g, " ");
+
 			// Remove only actual HTML tags (not <<< or >>>)
 			// This pattern matches tags like <strong>, <p>, etc. but not <<< or >>>
-			labelText = labelText.replace(/<\/?[a-z][a-z0-9]*(?:\s[^>]*)?>/gi, '');
-			
+			labelText = labelText.replace(/<\/?[a-z][a-z0-9]*(?:\s[^>]*)?>/gi, "");
+
 			// Clean up whitespace
 			labelText = labelText.trim();
-			
+
 			// Skip if label is empty after cleanup
-			if (labelText === '') {
+			if (labelText === "") {
 				continue;
 			}
-			
+
 			// Check if this link is wrapped in <del> tag (unavailable)
 			// Look for <del> tag that directly wraps this <a> tag
-			const beforeLink = htmlContent.substring(Math.max(0, linkPattern.lastIndex - fullMatch.length - 50), linkPattern.lastIndex - fullMatch.length);
-			const isUnavailable = beforeLink.includes('<del>') || fullMatch.includes('<del>');
-			
+			const beforeLink = htmlContent.substring(
+				Math.max(0, linkPattern.lastIndex - fullMatch.length - 50),
+				linkPattern.lastIndex - fullMatch.length,
+			);
+			const isUnavailable =
+				beforeLink.includes("<del>") || fullMatch.includes("<del>");
+
 			// Determine link type based on URL first for turbobit, then label, then other URLs
 			// IMPORTANT: Turbobit always uses URL-based detection
-			let type: any = 'direct';
-			
+			let type: any = "direct";
+
 			// Check for torrent in label first
-			if (labelText.toLowerCase().includes('torrent')) {
-				type = 'torrent';
-			} else if (url.includes('turbobit')) {
+			if (labelText.toLowerCase().includes("torrent")) {
+				type = "torrent";
+			} else if (url.includes("turbobit")) {
 				// Turbobit is a special case - always use URL-based detection
-				type = 'turbobit';
-			} else if (labelText.toLowerCase().includes('alternatif')) {
+				type = "turbobit";
+			} else if (labelText.toLowerCase().includes("alternatif")) {
 				// Extract link number from label (e.g., "Link1", "Link2", "Link3")
 				const linkNumberMatch = labelText.match(/Link\s*(\d+)/i);
 				if (linkNumberMatch) {
 					type = `direct${linkNumberMatch[1]}`;
 				} else {
-					type = 'direct';
+					type = "direct";
 				}
 			} else {
 				// Only check URL if label didn't match "Alternatif" or "Torrent"
-				if (url.includes('pixeldrain')) {
-					type = 'pixeldrain';
-				} else if (url.includes('mediafire')) {
-					type = 'mediafire';
-				} else if (url.includes('drive.google.com')) {
-					type = 'googledrive';
-				} else if (url.toLowerCase().includes('torrent')) {
-					type = 'torrent';
+				if (url.includes("pixeldrain")) {
+					type = "pixeldrain";
+				} else if (url.includes("mediafire")) {
+					type = "mediafire";
+				} else if (url.includes("drive.google.com")) {
+					type = "googledrive";
+				} else if (url.toLowerCase().includes("torrent")) {
+					type = "torrent";
 				}
 			}
-			
+
 			links.push({
 				type,
 				url,
@@ -361,7 +365,7 @@ export abstract class BaseProvider implements Provider {
 				label: labelText,
 			});
 		}
-		
+
 		return links;
 	}
 
@@ -377,53 +381,55 @@ export abstract class BaseProvider implements Provider {
 	 */
 	protected extractSystemRequirements(htmlContent: string): any {
 		const requirements: any = {
-			os: '',
-			cpu: '',
-			gpu: '',
-			ram: '',
-			storage: '',
-			directX: '',
+			os: "",
+			cpu: "",
+			gpu: "",
+			ram: "",
+			storage: "",
+			directX: "",
 		};
-		
+
 		// Look for the system requirements section pattern: "PC Sistem.*Gereksinimi" (case insensitive)
-		const requirementsSectionPattern = /(?:PC\s*Sistem|Sistem)\s*(?:vb\s*)?Gereksinimi/i;
+		const requirementsSectionPattern =
+			/(?:PC\s*Sistem|Sistem)\s*(?:vb\s*)?Gereksinimi/i;
 		const sectionMatch = htmlContent.search(requirementsSectionPattern);
-		
+
 		if (sectionMatch === -1) {
 			return null;
 		}
-		
+
 		// Extract content from the section start to the next <hr> tag or major section break
 		const afterSection = htmlContent.substring(sectionMatch);
 		const hrMatch = afterSection.search(/<hr\s*\/?>|<p[^>]*>\s*<strong/i);
-		
-		const requirementsText = hrMatch !== -1
-			? afterSection.substring(0, hrMatch)
-			: afterSection.substring(0, 3000); // Limit to 3000 chars as fallback
-		
+
+		const requirementsText =
+			hrMatch !== -1
+				? afterSection.substring(0, hrMatch)
+				: afterSection.substring(0, 3000); // Limit to 3000 chars as fallback
+
 		// Replace <br> with line breaks
-		const textWithBreaks = requirementsText.replace(/<br\s*\/?>/gi, '\n');
-		
+		const textWithBreaks = requirementsText.replace(/<br\s*\/?>/gi, "\n");
+
 		// Remove all HTML tags (except we've already processed br tags)
 		const text = textWithBreaks
-			.replace(/<\/?[a-z][a-z0-9]*(?:\s[^>]*)?>/gi, ' ') // HTML tags
-			.replace(/&nbsp;/g, ' ')
-			.replace(/</g, '<')
-			.replace(/>/g, '>')
-			.replace(/&/g, '&')
-			.replace(/&#8211;/g, '-')
-			.replace(/&#8230;/g, '...')
-			.replace(/–/g, '-') // en-dash to regular dash
-			.replace(/\s+/g, ' ') // collapse whitespace
+			.replace(/<\/?[a-z][a-z0-9]*(?:\s[^>]*)?>/gi, " ") // HTML tags
+			.replace(/&nbsp;/g, " ")
+			.replace(/</g, "<")
+			.replace(/>/g, ">")
+			.replace(/&/g, "&")
+			.replace(/&#8211;/g, "-")
+			.replace(/&#8230;/g, "...")
+			.replace(/–/g, "-") // en-dash to regular dash
+			.replace(/\s+/g, " ") // collapse whitespace
 			.trim();
-		
+
 		// Keep the full text for pattern matching, don't split by lines
 		// This allows us to match patterns across the entire requirements section
-		
+
 		// Process lines in a more robust way - search for patterns across the text
 		const fullLower = text.toLowerCase();
 		const upper = text;
-		
+
 		// Check if each requirement type exists in the text and extract the value
 		// Look for Windows version - more flexible pattern
 		if (!requirements.os) {
@@ -444,7 +450,7 @@ export abstract class BaseProvider implements Provider {
 				}
 			}
 		}
-		
+
 		// Extract CPU - look for processor-related keywords and extract the value before them
 		if (!requirements.cpu) {
 			// Find the processor value that comes BEFORE the keyword
@@ -470,7 +476,7 @@ export abstract class BaseProvider implements Provider {
 					// Split by space and take first two parts if available
 					const parts = cpuText.split(/\s+/);
 					if (parts.length >= 2) {
-						requirements.cpu = parts[0] + ' ' + parts[1];
+						requirements.cpu = parts[0] + " " + parts[1];
 					} else if (parts.length === 1) {
 						requirements.cpu = cpuText;
 					}
@@ -478,7 +484,7 @@ export abstract class BaseProvider implements Provider {
 				}
 			}
 		}
-		
+
 		// Extract GPU - look for graphics-related keywords and extract the value before them
 		if (!requirements.gpu) {
 			const gpuPatterns = [
@@ -499,16 +505,20 @@ export abstract class BaseProvider implements Provider {
 					if (parts.length >= 2) {
 						// Check if this is a Vram pattern (like "6 GB")
 						if (parts[0].match(/^\d+$/) && parts[1].match(/^(GB|MB|TB)$/)) {
-							requirements.gpu = match[1] + ' Vram'; // Keep the full match for Vram
+							requirements.gpu = match[1] + " Vram"; // Keep the full match for Vram
 						} else {
 							// Extract the second word (e.g., "GeForce" from "Nvidia GeForce GTX 650")
 							// Prioritize brand names over series names
-							const brandNames = ['GeForce', 'Radeon', 'Arc'];
-							const seriesNames = ['GTX', 'RTX', 'RX', 'HD', 'GT'];
-							
+							const brandNames = ["GeForce", "Radeon", "Arc"];
+							const seriesNames = ["GTX", "RTX", "RX", "HD", "GT"];
+
 							if (brandNames.includes(parts[1])) {
 								requirements.gpu = parts[1];
-							} else if (seriesNames.includes(parts[1]) && parts.length >= 3 && brandNames.includes(parts[2])) {
+							} else if (
+								seriesNames.includes(parts[1]) &&
+								parts.length >= 3 &&
+								brandNames.includes(parts[2])
+							) {
 								// If we have "Nvidia GTX GeForce", prefer GeForce
 								requirements.gpu = parts[2];
 							} else if (seriesNames.includes(parts[1])) {
@@ -526,7 +536,7 @@ export abstract class BaseProvider implements Provider {
 				}
 			}
 		}
-		
+
 		// Extract RAM - look for memory-related keywords
 		if (!requirements.ram) {
 			const ramPatterns = [
@@ -543,7 +553,7 @@ export abstract class BaseProvider implements Provider {
 				}
 			}
 		}
-		
+
 		// Extract Storage - look for storage-related keywords
 		if (!requirements.storage) {
 			const storagePatterns = [
@@ -562,7 +572,7 @@ export abstract class BaseProvider implements Provider {
 				}
 			}
 		}
-		
+
 		// Extract DirectX
 		if (!requirements.directX) {
 			const dxPatterns = [
@@ -577,12 +587,19 @@ export abstract class BaseProvider implements Provider {
 				}
 			}
 		}
-		
+
 		// Return null if no requirements were found
-		if (!requirements.os && !requirements.cpu && !requirements.gpu && !requirements.ram && !requirements.storage && !requirements.directX) {
+		if (
+			!requirements.os &&
+			!requirements.cpu &&
+			!requirements.gpu &&
+			!requirements.ram &&
+			!requirements.storage &&
+			!requirements.directX
+		) {
 			return null;
 		}
-		
+
 		return requirements;
 	}
 
@@ -590,7 +607,7 @@ export abstract class BaseProvider implements Provider {
 	 * Extract media gallery images from HTML content
 	 * @param htmlContent HTML content containing images
 	 * @returns Array of image URLs
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * const gallery = this.extractMediaGallery(content.rendered);
@@ -600,15 +617,15 @@ export abstract class BaseProvider implements Provider {
 		const images: string[] = [];
 		const imgPattern = /<img[^>]+src=["']([^"']+)["'][^>]*>/gi;
 		let match;
-		
+
 		while ((match = imgPattern.exec(htmlContent)) !== null) {
 			const url = match[1];
 			// Skip very small images (likely icons) and duplicate URLs
-			if (url && !images.includes(url) && !url.includes('avatar')) {
+			if (url && !images.includes(url) && !url.includes("avatar")) {
 				images.push(url);
 			}
 		}
-		
+
 		return images;
 	}
 
@@ -616,7 +633,7 @@ export abstract class BaseProvider implements Provider {
 	 * Sanitize HTML content by removing tags
 	 * @param html HTML content to sanitize
 	 * @returns Plain text content
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * const description = this.sanitizeHtml(content.rendered);
@@ -625,18 +642,18 @@ export abstract class BaseProvider implements Provider {
 	protected sanitizeHtml(html: string): string {
 		// Remove HTML tags but preserve line breaks
 		return html
-			.replace(/<br\s*\/?>/gi, '\n')
-			.replace(/<\/p>/gi, '\n\n')
-			.replace(/<[^>]+>/g, '')
-			.replace(/&nbsp;/g, ' ')
-			.replace(/&/g, '&')
-			.replace(/</g, '<')
-			.replace(/>/g, '>')
-			.replace(/&#8211;/g, '-') // en dash
-			.replace(/&#8230;/g, '...') // ellipsis
+			.replace(/<br\s*\/?>/gi, "\n")
+			.replace(/<\/p>/gi, "\n\n")
+			.replace(/<[^>]+>/g, "")
+			.replace(/&nbsp;/g, " ")
+			.replace(/&/g, "&")
+			.replace(/</g, "<")
+			.replace(/>/g, ">")
+			.replace(/&#8211;/g, "-") // en dash
+			.replace(/&#8230;/g, "...") // ellipsis
 			.replace(/"/g, '"')
 			.replace(/'/g, "'")
-			.replace(/&#8212;/g, '—') // em dash
+			.replace(/&#8212;/g, "—") // em dash
 			.replace(/&#8216;/g, "'") // left single quote
 			.replace(/&#8217;/g, "'") // right single quote
 			.replace(/&#8220;/g, '"') // left double quote
