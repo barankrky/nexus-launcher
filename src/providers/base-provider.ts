@@ -632,6 +632,15 @@ export abstract class BaseProvider implements Provider {
 			.replace(/&/g, '&')
 			.replace(/</g, '<')
 			.replace(/>/g, '>')
+			.replace(/&#8211;/g, '-') // en dash
+			.replace(/&#8230;/g, '...') // ellipsis
+			.replace(/"/g, '"')
+			.replace(/'/g, "'")
+			.replace(/&#8212;/g, '—') // em dash
+			.replace(/&#8216;/g, "'") // left single quote
+			.replace(/&#8217;/g, "'") // right single quote
+			.replace(/&#8220;/g, '"') // left double quote
+			.replace(/&#8221;/g, '"') // right double quote
 			.trim();
 	}
 
